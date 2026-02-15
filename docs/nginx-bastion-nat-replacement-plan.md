@@ -120,9 +120,11 @@ server {
 - 완료:
   - `infra/network` apply 완료
   - `infra/security` apply 완료
-- 미진행:
-  - `infra/compute`
-  - `infra/cdn`
+  - `infra/compute` apply 완료
+  - `infra/cdn` apply 완료
+- 남은 작업:
+  - FE 애플리케이션(`:3000`) 기동
+  - Nginx -> FE 업스트림 확인
 
 ### H. 검증 체크리스트
 1. Bastion 접속 가능(SSH)
@@ -138,7 +140,44 @@ server {
 4. 운영 이전에 `ALB + NAT Gateway`로 단계적 복귀 계획 준비
 
 ## 6) 즉시 실행 TODO
-1. `infra/compute`에 network/security output 값 주입 후 `plan -> apply`
-2. `Bastion+NAT` user-data 및 private 기본 라우트 동작 확인
-3. `Nginx -> FE private` 연결 확인
-4. `infra/cdn`의 `ssr_origin_domain`을 nginx 도메인으로 교체 후 `plan -> apply`
+1. FE 서버에 애플리케이션 컨테이너 실행(`:3000`)
+2. Nginx 업스트림(`10.0.11.136:3000`) 연결 확인
+3. CloudFront `/` 경로가 FE 응답을 반환하는지 검증
+4. CI/CD에서 정적 자산(S3) + SSR(EC2) 동시 배포 파이프라인 반영
+
+## 7) 실행 로그 요약 (2026-02-15)
+### A. 실제 생성 완료 리소스
+- Network:
+  - `vpc-0748ee7da6c386861`
+  - Public Subnet: `subnet-0a4f71ff33428690d`
+  - Private Subnet A: `subnet-047324ec024aefc25`
+  - Private RT: `rtb-043cc010d8de82d4d`
+- Security:
+  - `sg-0c20eb6f55e5ca2b9` (bastion-nat)
+  - `sg-0bd46908c85ac316c` (nginx)
+  - `sg-08cda653cbfc67fce` (fe)
+- Compute:
+  - Bastion: `i-04b8adc6ae43eef53` (`13.125.158.32`)
+  - Nginx: `i-019fad083a1f6d398` (`54.180.247.20`)
+  - FE: `i-085d9219dfeee7d5a` (`10.0.11.136`)
+- CDN:
+  - CloudFront ID: `E3T1SF1FP2TR`
+  - Domain: `d1xf7hpa4b4zbr.cloudfront.net`
+  - Static Bucket: `doktori-fe-static-246477585940-dev`
+
+### B. 트러블슈팅 기록
+1. 증상:
+   - FE 서버에서 `dnf`/외부 인터넷 연결이 장시간 타임아웃
+2. 원인:
+   - Bastion NAT `iptables`가 `eth0` 기준으로만 설정됨
+   - 실제 NIC는 `ens5`라 NAT 규칙 미적용
+3. 조치:
+   - Bastion에 `ens5` 기준 MASQUERADE/FORWARD 규칙 추가
+   - `sg_bastion_nat`에 `10.0.0.0/16` 인바운드 허용(NAT 포워딩용)
+4. 결과:
+   - FE에서 외부 HTTPS 통신 정상 복구
+   - FE에 `docker` 설치 완료, `aws cli` 사용 가능 확인
+
+### C. 현재 서비스 상태
+- CloudFront `/` 응답: `HTTP 200` 확인
+- 단, FE 앱이 `:3000`에서 아직 미기동이라 Nginx 기본 페이지 응답 중
