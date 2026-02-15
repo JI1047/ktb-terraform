@@ -1,0 +1,12 @@
+---
+- name: Bootstrap FE Server
+  hosts: fe
+  become: true
+  tasks:
+    - name: Install nodejs and npm
+      ansible.builtin.dnf:
+        name:
+          - nodejs
+          - npm
+        state: present
+        update_cache: true

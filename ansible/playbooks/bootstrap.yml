@@ -1,0 +1,13 @@
+---
+- name: Bootstrap Common Packages
+  hosts: all
+  become: true
+  tasks:
+    - name: Install base packages
+      ansible.builtin.dnf:
+        name:
+          - git
+          - curl
+          - unzip
+        state: present
+        update_cache: true

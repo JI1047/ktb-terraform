@@ -1,0 +1,9 @@
+project = "doktori-fe"
+vpc_id  = "vpc-xxxxxxxx"
+
+# Recommended for test: keep SSH closed.
+enable_bastion_ssh = false
+admin_ingress_cidrs = []
+
+# For early test, open to all. Restrict later to CloudFront ranges if needed.
+nginx_ingress_cidrs = ["0.0.0.0/0"]

@@ -1,0 +1,15 @@
+project = "doktori-fe"
+
+public_subnet_id      = "subnet-xxxxxxxx"
+private_subnet_id     = "subnet-yyyyyyyy"
+private_route_table_id = "rtb-xxxxxxxx"
+
+bastion_nat_sg_id = "sg-aaaaaaaa"
+nginx_sg_id       = "sg-bbbbbbbb"
+fe_sg_id          = "sg-cccccccc"
+
+instance_profile_name = null
+
+instance_type = "t3.micro"
+key_name      = null
+fe_app_port   = 3000
