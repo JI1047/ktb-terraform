@@ -36,6 +36,11 @@ variable "instance_profile_name" {
   default = null
 }
 
+variable "fe_instance_profile_name" {
+  type    = string
+  default = null
+}
+
 variable "key_name" {
   type    = string
   default = null

@@ -30,6 +30,9 @@
   - VPC, Subnet, IGW, Route Table
 - `infra/security`
   - SG
+- `infra/iam`
+  - FE EC2용 IAM Role/Instance Profile
+  - 연결 정책: `AmazonSSMManagedInstanceCore`, `AmazonEC2ContainerRegistryReadOnly`
 - `infra/compute`
   - Bastion+NAT EC2, Nginx EC2, FE EC2, Private RT 기본 라우트(NAT ENI)
 - `infra/cdn`
@@ -120,9 +123,12 @@ server {
 - 완료:
   - `infra/network` apply 완료
   - `infra/security` apply 완료
+  - `infra/iam` apply 완료
   - `infra/compute` apply 완료
   - `infra/cdn` apply 완료
   - `infra/compute` Ubuntu 전환 apply 완료 (Amazon Linux -> Ubuntu 24.04)
+  - FE 인스턴스에 IAM Instance Profile 연결 완료
+  - FE SSM Managed Instance 등록 완료
 - 남은 작업:
   - FE 애플리케이션(`:3000`) 기동
   - Nginx -> FE 업스트림 확인
@@ -161,6 +167,12 @@ server {
   - Bastion: `i-00fbfcdfb106037d2` (`54.180.151.216`)
   - Nginx: `i-08ff154c333e80490` (`43.201.51.112`)
   - FE: `i-0d5c31c492e4bc9eb` (`10.0.11.228`)
+- IAM:
+  - FE Role: `doktori-fe-ec2-role`
+  - FE Instance Profile: `doktori-fe-ec2-profile`
+  - Attached Policies:
+    - `AmazonSSMManagedInstanceCore`
+    - `AmazonEC2ContainerRegistryReadOnly`
 - CDN:
   - CloudFront ID: `E3T1SF1FP2TR`
   - Domain: `d1xf7hpa4b4zbr.cloudfront.net`
@@ -182,6 +194,7 @@ server {
 ### C. 현재 서비스 상태
 - CloudFront `/` 응답: `HTTP 200` 확인
 - 단, FE 앱이 `:3000`에서 아직 미기동이라 Nginx 기본 페이지 응답 중
+- FE SSM 상태: `Online` 확인 (`i-0d5c31c492e4bc9eb`)
 
 ## 8) 운영 런북 (현재 기준)
 ### A. SSH 접속

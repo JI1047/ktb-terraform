@@ -70,7 +70,7 @@ resource "aws_instance" "fe" {
   instance_type          = var.instance_type
   subnet_id              = var.private_subnet_id
   vpc_security_group_ids = [var.fe_sg_id]
-  iam_instance_profile   = var.instance_profile_name
+  iam_instance_profile   = var.fe_instance_profile_name != null ? var.fe_instance_profile_name : var.instance_profile_name
   key_name               = var.key_name
 
   associate_public_ip_address = false

@@ -9,6 +9,7 @@ nginx_sg_id       = "sg-0bd46908c85ac316c"
 fe_sg_id          = "sg-08cda653cbfc67fce"
 
 instance_profile_name = null
+fe_instance_profile_name = "doktori-fe-ec2-profile"
 instance_type         = "t3.micro"
 key_name              = "doktori-fe-key"
 fe_app_port           = 3000

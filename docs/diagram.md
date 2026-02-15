@@ -33,6 +33,8 @@
 - Bastion+NAT: `i-00fbfcdfb106037d2` (`54.180.151.216`)
 - Nginx: `i-08ff154c333e80490` (`43.201.51.112`)
 - FE: `i-0d5c31c492e4bc9eb` (`10.0.11.228`)
+- FE IAM Profile: `doktori-fe-ec2-profile`
+- FE IAM Role: `doktori-fe-ec2-role`
 - CloudFront: `E3T1SF1FP2TR` (`d1xf7hpa4b4zbr.cloudfront.net`)
 - S3 Static Bucket: `doktori-fe-static-246477585940-dev`
 
@@ -46,6 +48,7 @@
 ### 3) 현재 동작 상태
 - `CloudFront -> Nginx`: 정상 응답 (`HTTP 200`)
 - `Nginx -> FE:3000`: 현재 연결 실패 (FE 앱 미기동 상태)
+- `FE -> SSM`: Online 등록 확인
 - 결과적으로 `/` 요청은 FE 응답이 아니라 Nginx 기본 페이지 응답
 
 ## 다음 작업

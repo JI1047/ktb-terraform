@@ -1,0 +1,5 @@
+project = "doktori-fe"
+
+# Optional override
+# ec2_role_name             = "doktori-fe-ec2-role"
+# ec2_instance_profile_name = "doktori-fe-ec2-profile"
