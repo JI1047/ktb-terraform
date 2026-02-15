@@ -1,5 +1,8 @@
 # Doktori Dev Infra Plan (ALB/NATGW 대체안)
 
+상세 변경 이력: `docs/change-log-2026-02-15.md`
+내일 실행 계획: `docs/tomorrow-plan-2026-02-16.md`
+
 ## 1) 목표
 - `ALB`를 사용하지 않고 `Nginx Reverse Proxy`로 대체
 - `NAT Gateway`를 사용하지 않고 `Bastion`을 `NAT Instance` 역할까지 겸임
@@ -147,10 +150,10 @@ server {
 4. 운영 이전에 `ALB + NAT Gateway`로 단계적 복귀 계획 준비
 
 ## 6) 즉시 실행 TODO
-1. FE 서버에 애플리케이션 컨테이너 실행(`:3000`)
-2. Nginx 업스트림(`10.0.11.228:3000`) 연결 확인
-3. CloudFront `/` 경로가 FE 응답을 반환하는지 검증
-4. CI/CD에서 정적 자산(S3) + SSR(EC2) 동시 배포 파이프라인 반영
+1. FE SSR 이미지와 S3 정적 파일을 동일 커밋 기준으로 재배포
+2. CloudFront invalidation 실행(`/_next/static/*`, `/public/*`, `/`)
+3. SSM target 전략 확정(태그 기반이면 FE 태그 추가)
+4. CI/CD 워크플로우 방식(SSM/SSH) 단일화
 
 ## 7) 실행 로그 요약 (2026-02-15)
 ### A. 실제 생성 완료 리소스
@@ -193,8 +196,11 @@ server {
 
 ### C. 현재 서비스 상태
 - CloudFront `/` 응답: `HTTP 200` 확인
-- 단, FE 앱이 `:3000`에서 아직 미기동이라 Nginx 기본 페이지 응답 중
+- Nginx -> FE 프록시 복구 완료, Next.js 응답 확인
+- FE Docker 컨테이너 실행 중 (`frontend`, `:3000`)
 - FE SSM 상태: `Online` 확인 (`i-0d5c31c492e4bc9eb`)
+- 브라우저 정적 자산(JS/CSS) 일부 로드 실패:
+  - 원인 추정: SSR/ECR 이미지 버전과 S3 정적 파일 해시 불일치
 
 ## 8) 운영 런북 (현재 기준)
 ### A. SSH 접속
