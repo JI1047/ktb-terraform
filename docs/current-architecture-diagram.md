@@ -59,3 +59,15 @@ flowchart LR
 ## 4) 현재 상태 한 줄 요약
 - 인프라 연결은 완료
 - 다만 FE 앱(3000 포트)이 아직 떠있지 않아, 페이지 요청은 현재 Nginx 기본 페이지가 응답 중
+
+## 5) 운영자 빠른 명령어
+```bash
+# 로컬 -> Bastion
+ssh -i infra/compute/keys/doktori-fe-key.pem ubuntu@ec2-54-180-151-216.ap-northeast-2.compute.amazonaws.com
+
+# Bastion -> FE
+ssh -i ~/doktori-fe-key.pem ubuntu@10.0.11.228
+
+# CloudFront 현재 응답 확인
+curl -I https://d1xf7hpa4b4zbr.cloudfront.net/
+```

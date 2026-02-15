@@ -182,3 +182,63 @@ server {
 ### C. 현재 서비스 상태
 - CloudFront `/` 응답: `HTTP 200` 확인
 - 단, FE 앱이 `:3000`에서 아직 미기동이라 Nginx 기본 페이지 응답 중
+
+## 8) 운영 런북 (현재 기준)
+### A. SSH 접속
+1. 로컬 -> Bastion
+```bash
+ssh -i infra/compute/keys/doktori-fe-key.pem ubuntu@ec2-54-180-151-216.ap-northeast-2.compute.amazonaws.com
+```
+2. Bastion -> FE
+```bash
+ssh -i ~/doktori-fe-key.pem ubuntu@10.0.11.228
+```
+
+### B. Ansible 적용 순서
+1. 공통 패키지
+```bash
+cd ansible
+ANSIBLE_CONFIG=ansible.cfg ansible-playbook -i inventory.ini playbooks/bootstrap.yml
+```
+2. FE 서버(docker/aws cli)
+```bash
+cd ansible
+ANSIBLE_CONFIG=ansible.cfg ansible-playbook -i inventory.ini playbooks/fe.yml
+```
+3. Nginx 리버스 프록시
+```bash
+cd ansible
+ANSIBLE_CONFIG=ansible.cfg ansible-playbook -i inventory.ini playbooks/nginx.yml
+```
+
+### C. ECR 기반 FE 배포 체크리스트
+1. FE 서버에서 Docker 실행 중 확인
+```bash
+docker --version
+systemctl status docker --no-pager
+```
+2. FE 서버에서 AWS CLI 확인
+```bash
+aws --version
+```
+3. FE 서버 IAM 권한 또는 AWS 자격증명 확인
+  - `ecr:GetAuthorizationToken`
+  - `ecr:BatchGetImage`
+  - `ecr:GetDownloadUrlForLayer`
+4. 배포 파이프라인에서 분리 배포
+  - SSR: ECR 이미지 pull 후 FE EC2 컨테이너 재기동
+  - 정적: `/_next/static/*`를 S3 버킷 동기화
+
+### D. 최종 검증
+1. FE 헬스 확인
+```bash
+curl -I http://10.0.11.228:3000
+```
+2. Nginx 경유 확인
+```bash
+curl -I http://ec2-43-201-51-112.ap-northeast-2.compute.amazonaws.com
+```
+3. CloudFront 경유 확인
+```bash
+curl -I https://d1xf7hpa4b4zbr.cloudfront.net/
+```
