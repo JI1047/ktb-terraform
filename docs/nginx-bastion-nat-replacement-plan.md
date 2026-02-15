@@ -122,6 +122,7 @@ server {
   - `infra/security` apply 완료
   - `infra/compute` apply 완료
   - `infra/cdn` apply 완료
+  - `infra/compute` Ubuntu 전환 apply 완료 (Amazon Linux -> Ubuntu 24.04)
 - 남은 작업:
   - FE 애플리케이션(`:3000`) 기동
   - Nginx -> FE 업스트림 확인
@@ -141,7 +142,7 @@ server {
 
 ## 6) 즉시 실행 TODO
 1. FE 서버에 애플리케이션 컨테이너 실행(`:3000`)
-2. Nginx 업스트림(`10.0.11.136:3000`) 연결 확인
+2. Nginx 업스트림(`10.0.11.228:3000`) 연결 확인
 3. CloudFront `/` 경로가 FE 응답을 반환하는지 검증
 4. CI/CD에서 정적 자산(S3) + SSR(EC2) 동시 배포 파이프라인 반영
 
@@ -157,9 +158,9 @@ server {
   - `sg-0bd46908c85ac316c` (nginx)
   - `sg-08cda653cbfc67fce` (fe)
 - Compute:
-  - Bastion: `i-04b8adc6ae43eef53` (`13.125.158.32`)
-  - Nginx: `i-019fad083a1f6d398` (`54.180.247.20`)
-  - FE: `i-085d9219dfeee7d5a` (`10.0.11.136`)
+  - Bastion: `i-00fbfcdfb106037d2` (`54.180.151.216`)
+  - Nginx: `i-08ff154c333e80490` (`43.201.51.112`)
+  - FE: `i-0d5c31c492e4bc9eb` (`10.0.11.228`)
 - CDN:
   - CloudFront ID: `E3T1SF1FP2TR`
   - Domain: `d1xf7hpa4b4zbr.cloudfront.net`

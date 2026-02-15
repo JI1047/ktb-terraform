@@ -25,6 +25,12 @@ resource "aws_vpc_security_group_ingress_rule" "bastion_ssh" {
   cidr_ipv4         = each.value
 }
 
+resource "aws_vpc_security_group_ingress_rule" "bastion_nat_from_vpc" {
+  security_group_id = aws_security_group.bastion_nat.id
+  ip_protocol       = "-1"
+  cidr_ipv4         = var.vpc_cidr
+}
+
 resource "aws_vpc_security_group_egress_rule" "bastion_all" {
   security_group_id = aws_security_group.bastion_nat.id
   ip_protocol       = "-1"

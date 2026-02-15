@@ -3,10 +3,39 @@
   hosts: fe
   become: true
   tasks:
-    - name: Install nodejs and npm
-      ansible.builtin.dnf:
+    - name: Install required apt packages
+      ansible.builtin.apt:
         name:
-          - nodejs
-          - npm
+          - docker.io
+          - curl
+          - unzip
         state: present
         update_cache: true
+
+    - name: Download AWS CLI v2 installer
+      ansible.builtin.get_url:
+        url: https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip
+        dest: /tmp/awscliv2.zip
+        mode: "0644"
+
+    - name: Unarchive AWS CLI installer
+      ansible.builtin.unarchive:
+        src: /tmp/awscliv2.zip
+        dest: /tmp
+        remote_src: true
+
+    - name: Install or update AWS CLI v2
+      ansible.builtin.command: /tmp/aws/install --update
+      changed_when: true
+
+    - name: Enable and start Docker
+      ansible.builtin.systemd:
+        name: docker
+        enabled: true
+        state: started
+
+    - name: Add ubuntu user to docker group
+      ansible.builtin.user:
+        name: ubuntu
+        groups: docker
+        append: true

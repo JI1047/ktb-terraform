@@ -1,15 +1,20 @@
-data "aws_ami" "al2023" {
+data "aws_ami" "ubuntu" {
   most_recent = true
-  owners      = ["amazon"]
+  owners      = ["099720109477"]
 
   filter {
     name   = "name"
-    values = ["al2023-ami-2023.*-x86_64"]
+    values = ["ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-*"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
   }
 }
 
 locals {
-  resolved_ami_id = var.ami_id != null ? var.ami_id : data.aws_ami.al2023.id
+  resolved_ami_id = var.ami_id != null ? var.ami_id : data.aws_ami.ubuntu.id
 
   common_tags = {
     Project = var.project
@@ -31,16 +36,21 @@ resource "aws_instance" "bastion_nat" {
   user_data = <<-EOF
               #!/bin/bash
               set -euxo pipefail
+
+              IFACE=$(ip route show default | awk '{print $5; exit}')
+
+              apt-get update -y
+              DEBIAN_FRONTEND=noninteractive apt-get install -y iptables-persistent
+
               sysctl -w net.ipv4.ip_forward=1
               grep -q "net.ipv4.ip_forward" /etc/sysctl.conf || echo "net.ipv4.ip_forward = 1" >> /etc/sysctl.conf
 
-              dnf install -y iptables-services || true
-              iptables -t nat -C POSTROUTING -o eth0 -j MASQUERADE || iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
-              iptables -C FORWARD -i eth0 -o eth0 -m state --state RELATED,ESTABLISHED -j ACCEPT || iptables -A FORWARD -i eth0 -o eth0 -m state --state RELATED,ESTABLISHED -j ACCEPT
-              iptables -C FORWARD -i eth0 -o eth0 -j ACCEPT || iptables -A FORWARD -i eth0 -o eth0 -j ACCEPT
+              iptables -t nat -C POSTROUTING -o "$IFACE" -j MASQUERADE || iptables -t nat -A POSTROUTING -o "$IFACE" -j MASQUERADE
+              iptables -C FORWARD -i "$IFACE" -o "$IFACE" -m state --state RELATED,ESTABLISHED -j ACCEPT || iptables -A FORWARD -i "$IFACE" -o "$IFACE" -m state --state RELATED,ESTABLISHED -j ACCEPT
+              iptables -C FORWARD -i "$IFACE" -o "$IFACE" -j ACCEPT || iptables -A FORWARD -i "$IFACE" -o "$IFACE" -j ACCEPT
 
-              service iptables save || true
-              systemctl enable iptables || true
+              netfilter-persistent save || true
+              systemctl enable netfilter-persistent || true
               EOF
 
   tags = merge(local.common_tags, {
@@ -68,9 +78,9 @@ resource "aws_instance" "fe" {
   user_data = <<-EOF
               #!/bin/bash
               set -euxo pipefail
-              dnf update -y
-              dnf install -y nodejs npm
-              # TODO: replace with actual FE deploy script for Next.js SSR.
+              apt-get update -y
+              DEBIAN_FRONTEND=noninteractive apt-get install -y ca-certificates curl gnupg lsb-release
+              # TODO: replace with actual FE deploy script.
               EOF
 
   tags = merge(local.common_tags, {
