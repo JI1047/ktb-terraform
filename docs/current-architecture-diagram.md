@@ -16,7 +16,7 @@ flowchart LR
     subgraph APP[AWS VPC 내부]
         S3[S3 버킷<br/>정적 파일 저장소]
         NGINX[Nginx 서버<br/>요청 전달]
-        FE[FE 서버 (Next.js)<br/>화면 생성]
+        FE[FE 서버 Next.js<br/>화면 생성]
         BASTION[Bastion + NAT 서버<br/>운영자 진입점]
         IGW[Internet Gateway]
     end
@@ -27,8 +27,8 @@ flowchart LR
     NGINX --> FE
 
     ADMIN --> BASTION
-    BASTION -.관리 접속.-> NGINX
-    BASTION -.관리 접속.-> FE
+    BASTION -.->|관리 접속| NGINX
+    BASTION -.->|관리 접속| FE
 
     FE -->|외부로 나갈 때| BASTION
     BASTION --> IGW
